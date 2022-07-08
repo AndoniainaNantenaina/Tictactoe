@@ -45,6 +45,13 @@ class Case {
 }
 
 public class DrawView extends View {
+
+    int CASE_NUMBER;
+
+    int isXFound = 1;
+    int isYFound = 2;
+    int isNotFound = 0;
+
     Paint paint = new Paint();
     Paint obj = new Paint();
 
@@ -55,7 +62,9 @@ public class DrawView extends View {
     int touchX = -1, touchY = -1;
 
     ArrayList<Integer> tabX = new ArrayList<Integer>()
-            , tabY = new ArrayList<Integer>();
+            , tabY = new ArrayList<Integer>()
+            , tabIndexX = new ArrayList<Integer>()
+            , tabIndexY = new ArrayList<Integer>();
 
     ArrayList<Case> TabCases = new ArrayList<Case>();
 
@@ -84,7 +93,7 @@ public class DrawView extends View {
         int left = 10;
         int initialleft = 10;
         int top = 10;
-        int boardsize = 3;
+        int boardsize = CASE_NUMBER;
 
         if (indexX == -1 && indexY == -1)
         {
@@ -145,20 +154,7 @@ public class DrawView extends View {
 
         if (touchX != -1 && touchY != -1)
         {
-            //System.out.println("Nombre de clic : " + tabX.size());
-
-            //  Prendre la case correspondant
-            Case cToDraw = matrice[indexX][indexY];
-
-            obj.setColor(Color.RED);
-            canvas.drawCircle(
-                    matrice[indexX][indexY].centerX,
-                    matrice[indexX][indexY].centerY,
-                    50,
-                    obj
-            );
-
-            /*//  Itération sur les tableaux
+            //  Itération sur les tableaux
             for (int tX = 0; tX < tabX.size(); tX++)
             {
                 System.out.println("Coords : ");
@@ -169,8 +165,48 @@ public class DrawView extends View {
                 obj.setStrokeWidth(15);
                 if ((tX & 1) == 0) {
                     obj.setColor(Color.GREEN);
+                    obj.setTextSize(18);
                     canvas.drawText("X",tabX.get(tX),
                             tabY.get(tX),obj );
+
+                    matrice[tabIndexX.get(tX)][tabIndexY.get(tX)].drawType = "X";
+
+                    if (checkGoal(indexX, indexY, "X") == isXFound)
+                    {
+                        System.out.println("VERT X GOAL ! ");
+
+                        //  Itération pour vérification
+                        for (int v = 0; v < CASE_NUMBER; v++)
+                        {
+                            Paint p = new Paint();
+                            p.setColor(Color.GREEN);
+                            canvas.drawRect(
+                                    matrice[tabIndexX.get(tX)][v].left,
+                                    matrice[tabIndexX.get(tX)][v].top,
+                                    matrice[tabIndexX.get(tX)][v].right,
+                                    matrice[tabIndexX.get(tX)][v].bottom,
+                                    p
+                            );
+                        }
+                    }
+                    else if (checkGoal(indexX, indexY, "X") == isYFound)
+                    {
+                        System.out.println("VERT Y GOAL ! ");
+
+                        //  Itération pour vérification
+                        for (int v = 0; v < CASE_NUMBER; v++)
+                        {
+                            Paint p = new Paint();
+                            p.setColor(Color.GREEN);
+                            canvas.drawRect(
+                                    matrice[v][tabIndexY.get(tX)].left,
+                                    matrice[v][tabIndexY.get(tX)].top,
+                                    matrice[v][tabIndexY.get(tX)].right,
+                                    matrice[v][tabIndexY.get(tX)].bottom,
+                                    p
+                            );
+                        }
+                    }
                 }
                 else
                 {
@@ -181,8 +217,47 @@ public class DrawView extends View {
                             50,
                             obj
                     );
+
+                    matrice[tabIndexX.get(tX)][tabIndexY.get(tX)].drawType = "O";
+
+                    if (checkGoal(indexX, indexY, "O") == isXFound)
+                    {
+                        System.out.println("ROUGE X GOAL ! ");
+
+                        //  Itération pour vérification
+                        for (int v = 0; v < CASE_NUMBER; v++)
+                        {
+                            Paint p = new Paint();
+                            p.setColor(Color.RED);
+                            canvas.drawRect(
+                                    matrice[tabIndexX.get(tX)][v].left,
+                                    matrice[tabIndexX.get(tX)][v].top,
+                                    matrice[tabIndexX.get(tX)][v].right,
+                                    matrice[tabIndexX.get(tX)][v].bottom,
+                                    p
+                            );
+                        }
+                    }
+                    else if (checkGoal(indexX, indexY, "O") == isYFound)
+                    {
+                        System.out.println("ROUGE Y GOAL ! ");
+
+                        //  Itération pour vérification
+                        for (int v = 0; v < CASE_NUMBER; v++)
+                        {
+                            Paint p = new Paint();
+                            p.setColor(Color.RED);
+                            canvas.drawRect(
+                                    matrice[v][tabIndexY.get(tX)].left,
+                                    matrice[v][tabIndexY.get(tX)].top,
+                                    matrice[v][tabIndexY.get(tX)].right,
+                                    matrice[v][tabIndexY.get(tX)].bottom,
+                                    p
+                            );
+                        }
+                    }
                 }
-            }*/
+            }
         }
 
 
@@ -219,6 +294,11 @@ public class DrawView extends View {
                         indexY = y;
 
                         matrice[x][y].drawType = "X";
+
+                        tabX.add(matrice[x][y].centerX);
+                        tabY.add(matrice[x][y].centerY);
+                        tabIndexX.add(indexX);
+                        tabIndexY.add(indexY);
 
                         invalidate();
                         return true;
@@ -265,5 +345,46 @@ public class DrawView extends View {
         }
 
         return true;
+    }
+
+    public int checkGoal(int indexX, int indexY, String drawType)
+    {
+        int nbCheckedX = 0;
+        int nbCheckedY = 0;
+
+        //  Itération sur X
+        for (int x=0; x < CASE_NUMBER; x++)
+        {
+            if (matrice[indexX][x].drawType.equals(drawType))
+            {
+                nbCheckedX++;
+            }
+        }
+
+        //  Itération sur Y
+        for (int y=0; y < CASE_NUMBER; y++)
+        {
+            if (matrice[y][indexY].drawType.equals(drawType))
+            {
+                nbCheckedY++;
+            }
+        }
+
+        if (nbCheckedX == CASE_NUMBER)
+        {
+            return isXFound;
+        }
+
+        if (nbCheckedY == CASE_NUMBER)
+        {
+            return isYFound;
+        }
+
+        return isNotFound;
+    }
+
+    public void setCASE_NUMBER(int M_CASE_NUMBER)
+    {
+        this.CASE_NUMBER = M_CASE_NUMBER;
     }
 }
