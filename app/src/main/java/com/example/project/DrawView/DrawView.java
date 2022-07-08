@@ -1,6 +1,7 @@
 package com.example.project.DrawView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,6 +10,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+
+import com.example.project.EndingActivity;
+import com.example.project.MainActivity;
 
 import java.util.ArrayList;
 
@@ -174,6 +178,7 @@ public class DrawView extends View {
                     if (checkGoal(indexX, indexY, "X") == isXFound)
                     {
                         System.out.println("VERT X GOAL ! ");
+                        System.out.println(CASE_NUMBER);
 
                         //  Itération pour vérification
                         for (int v = 0; v < CASE_NUMBER; v++)
@@ -188,10 +193,14 @@ public class DrawView extends View {
                                     p
                             );
                         }
+
+                        //  Afficher l'activité final
+                        showEndingScreen();
                     }
                     else if (checkGoal(indexX, indexY, "X") == isYFound)
                     {
                         System.out.println("VERT Y GOAL ! ");
+                        System.out.println(CASE_NUMBER);
 
                         //  Itération pour vérification
                         for (int v = 0; v < CASE_NUMBER; v++)
@@ -206,6 +215,9 @@ public class DrawView extends View {
                                     p
                             );
                         }
+
+                        //  Afficher l'activité final
+                        showEndingScreen();
                     }
                 }
                 else
@@ -223,6 +235,7 @@ public class DrawView extends View {
                     if (checkGoal(indexX, indexY, "O") == isXFound)
                     {
                         System.out.println("ROUGE X GOAL ! ");
+                        System.out.println(CASE_NUMBER);
 
                         //  Itération pour vérification
                         for (int v = 0; v < CASE_NUMBER; v++)
@@ -237,10 +250,14 @@ public class DrawView extends View {
                                     p
                             );
                         }
+
+                        //  Afficher l'activité final
+                        showEndingScreen();
                     }
                     else if (checkGoal(indexX, indexY, "O") == isYFound)
                     {
                         System.out.println("ROUGE Y GOAL ! ");
+                        System.out.println(CASE_NUMBER);
 
                         //  Itération pour vérification
                         for (int v = 0; v < CASE_NUMBER; v++)
@@ -255,12 +272,13 @@ public class DrawView extends View {
                                     p
                             );
                         }
+
+                        //  Afficher l'activité final
+                        showEndingScreen();
                     }
                 }
             }
         }
-
-
     }
 
     @Override
@@ -386,5 +404,13 @@ public class DrawView extends View {
     public void setCASE_NUMBER(int M_CASE_NUMBER)
     {
         this.CASE_NUMBER = M_CASE_NUMBER;
+    }
+
+    public void showEndingScreen()
+    {
+        //  Afficher l'activité final
+        Context mContext = getContext();
+        Intent endingView = new Intent(mContext, EndingActivity.class);
+        mContext.startActivity(endingView);
     }
 }

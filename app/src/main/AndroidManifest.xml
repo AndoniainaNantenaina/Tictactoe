@@ -14,8 +14,11 @@
         android:theme="@style/Theme.Project"
         tools:targetApi="31">
         <activity
+            android:name=".EndingActivity"
+            android:exported="false" />
+        <activity
             android:name=".LaunchActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
