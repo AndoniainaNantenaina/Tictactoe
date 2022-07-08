@@ -19,40 +19,52 @@ class Case {
     public int left;
     public int right;
     public int c;
-    public int centerx;
-    public int centery;
+
+    public String drawType;
+    public int centerX;
+    public int centerY;
 
     //  Constructor
     Case(
-            boolean isDrawed,
+            //boolean isDrawed,
             int top,
             int bottom,
             int left,
             int right,
-            Color c,
-            int centerx,
-            int centery) {
-        this.isDrawed = isDrawed;
+            String drawType
+        ) {
+        //this.isDrawed = isDrawed;
         this.top = top;
         this.bottom = bottom;
         this.left = left;
         this.right = right;
-        this.c = c;
-        this.centerx = centerx;
-        this.centery = centery;
+        this.drawType = drawType;
+        this.centerX = left + ((right - left) / 2);
+        this.centerY = top + ((bottom - top) / 2 );
     }
 }
 
 public class DrawView extends View {
+
+    int CASE_NUMBER;
+
     Paint paint = new Paint();
     Paint obj = new Paint();
 
-    int touchX = 0, touchY = 0;
+    //  Global indexes
+    int indexX = -1;
+    int indexY = -1;
+
+    int touchX = -1, touchY = -1;
 
     ArrayList<Integer> tabX = new ArrayList<Integer>()
-            , tabY = new ArrayList<Integer>();
+            , tabY = new ArrayList<Integer>()
+            , tabIndexX = new ArrayList<Integer>()
+            , tabIndexY = new ArrayList<Integer>();
 
     ArrayList<Case> TabCases = new ArrayList<Case>();
+
+    public Case[][] matrice;
 
     public DrawView(Context context) {
         super(context);
@@ -68,7 +80,7 @@ public class DrawView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        paint.setColor(Color.WHITE);
+        paint.setColor(Color.BLACK);
         obj.setColor(Color.GREEN);
 
         int bottom = 200;
@@ -77,14 +89,29 @@ public class DrawView extends View {
         int left = 10;
         int initialleft = 10;
         int top = 10;
-        int boardsize = 3;
+        int boardsize = CASE_NUMBER;
 
-        int z=0;
+        if (indexX == -1 && indexY == -1)
+        {
+            //  Initialiser la taille de la matrice
+            matrice = new Case[boardsize][boardsize];
+        }
+
+        int x=0;
+
+        /*//  Initialisation de la matrice
+        for (int x = 0; x < boardsize; x++)
+        {
+            for (int y = 0; y < boardsize; y++)
+            {
+                tab[x][y] = "";
+            }
+        }*/
 
         //  Boucle de création des cases
         for (int i=0;i<(boardsize*boardsize);i++){
 
-            while (z< boardsize){
+            while (x< boardsize){
 
                 for (int y=0; y < boardsize; y++){
 
@@ -96,13 +123,16 @@ public class DrawView extends View {
                             bottom,
                             paint);
 
-                    if (TabCases.size() < 9)
+                    if (TabCases.size() < boardsize*boardsize) // boardsize value
                     {
                         //  Instantiation de l'objet Case
-                        Case c = new Case(false, top, bottom, left, right);
+                        Case c = new Case(top, bottom, left, right, "");
 
                         //  Ajouter dans le tableau
                         TabCases.add(c);
+
+                        //  Ajouter le case dans la matrice
+                        matrice[x][y] = c;
                     }
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(20);
@@ -110,7 +140,7 @@ public class DrawView extends View {
                     right = right+pixel;
                 }
 
-                z=z+1;
+                x=x+1;
                 left = initialleft;
                 top = top+pixel;
                 right= pixel;
@@ -118,10 +148,8 @@ public class DrawView extends View {
             }
         }
 
-        if (touchX != 0 && touchY != 0)
+        if (touchX != -1 && touchY != -1)
         {
-            System.out.println("Nombre de clic : " + tabX.size());
-
             //  Itération sur les tableaux
             for (int tX = 0; tX < tabX.size(); tX++)
             {
@@ -133,12 +161,11 @@ public class DrawView extends View {
                 obj.setStrokeWidth(15);
                 if ((tX & 1) == 0) {
                     obj.setColor(Color.GREEN);
-                    canvas.drawCircle(
-                            tabX.get(tX),
-                            tabY.get(tX),
-                            50,
-                            obj
-                    );
+                    obj.setTextSize(18);
+                    canvas.drawText("X",tabX.get(tX),
+                            tabY.get(tX),obj );
+
+                    matrice[tabIndexX.get(tX)][tabIndexY.get(tX)].drawType = "X";
                 }
                 else
                 {
@@ -149,6 +176,8 @@ public class DrawView extends View {
                             50,
                             obj
                     );
+
+                    matrice[tabIndexX.get(tX)][tabIndexY.get(tX)].drawType = "O";
                 }
             }
         }
@@ -163,38 +192,117 @@ public class DrawView extends View {
         {
             touchX = (int)event.getX();
             touchY = (int)event.getY();
+            //boolean isDraw = false;
 
             System.out.println("TouchX = " + touchX);
             System.out.println("TouchY = " + touchY);
 
             System.out.println("Nombre de case : " + TabCases.size());
 
-            //  Itération sur le tableau de case
+            for (int x=0; x<matrice.length; x++)
+            {
+                for (int y=0;y< matrice[x].length; y++)
+                {
+                    if (
+                            touchX <= matrice[x][y].right
+                            && touchX >= matrice[x][y].left
+                            && touchY <= matrice[x][y].bottom
+                            && touchY >= matrice[x][y].top
+                            && matrice[x][y].drawType.equals("")
+                    )
+                    {
+                        //  Index de la matrice
+                        indexX = x;
+                        indexY = y;
+
+                        matrice[x][y].drawType = "X";
+
+                        tabX.add(matrice[x][y].centerX);
+                        tabY.add(matrice[x][y].centerY);
+                        tabIndexX.add(indexX);
+                        tabIndexY.add(indexY);
+
+                        invalidate();
+                        return true;
+                    }
+                }
+            }
+
+            /*//  Itération sur le tableau de case
             for (int t = 0; t <= TabCases.size(); t++)
             {
+
                 if (touchX <= TabCases.get(t).right
-                    && touchX >= TabCases.get(t).left
-                    && touchY <= TabCases.get(t).bottom
-                    && touchY >= TabCases.get(t).top
-                    && !TabCases.get(t).isDrawed)
+                        && touchX >= TabCases.get(t).left
+                        && touchY <= TabCases.get(t).bottom
+                        && touchY >= TabCases.get(t).top
+                )
                 {
-                    touchX = TabCases.get(t).left + ( (TabCases.get(t).right - TabCases.get(t).left) / 2);
-                    touchY = TabCases.get(t).top + ( (TabCases.get(t).bottom - TabCases.get(t).top) / 2 );
+                    touchX = TabCases.get(t).left + (
+                            (TabCases.get(t).right - TabCases.get(t).left) / 2);
+                    touchY = TabCases.get(t).top + (
+                            (TabCases.get(t).bottom - TabCases.get(t).top) / 2 );
 
                     //  Ajouter les coords dans les tableaux
-                    tabX.add(touchX);
-                    tabY.add(touchY);
+                    for(int i=0; i<tabX.size(); i++){
+                        if(tabX.get(i)==touchX && tabY.get(i) == touchY){
+                           isDraw = true;
+                        }
+                    }
+                    if(!isDraw){
+                        tabX.add(touchX);
+                        tabY.add(touchY);
+                    }
 
-                    TabCases.get(t).isDrawed = true;
+                   // TabCases.get(t).isDrawed = true;
 
                     invalidate();
                     return true;
                 }
-            }
+
+
+            }*/
 
             return true;
         }
 
         return true;
+    }
+
+    public boolean checkGoal(int indexX, int indexY, String drawType)
+    {
+        //  La case à vérifier
+        Case caseToVerify = matrice[indexX][indexY];
+
+        int nbCheckedX = 0;
+        int nbCheckedY = 0;
+
+        //  Itération sur X
+        for (int x=0; x < matrice[indexX].length; x++)
+        {
+            if (matrice[indexX][x].drawType.equals(drawType))
+            {
+                nbCheckedX++;
+            }
+        }
+
+        //  Itération sur Y
+        /*for (int y=0; y < matrice[indexX][indexY].length; y++)
+        {
+            //if (matrice[])
+            nbCheckedY++;
+        }
+
+        if (nbCheckedX == 3)
+        {
+            return true;
+        }*/
+
+        return false;
+    }
+
+    public void setCASE_NUMBER(int M_CASE_NUMBER)
+    {
+        this.CASE_NUMBER = M_CASE_NUMBER;
     }
 }
